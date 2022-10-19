@@ -200,7 +200,6 @@
 <span id="200">200</span>
 <span id="201">201</span>
 <span id="202">202</span>
-<span id="203">203</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">rome_console</span>::{<span class="ident">markup</span>, <span class="ident">ConsoleExt</span>};
 <span class="kw">use</span> <span class="ident">rome_lsp::ServerFactory</span>;
 <span class="kw">use</span> <span class="ident">rome_service</span>::{<span class="ident">workspace::WorkspaceClient</span>, <span class="ident">RomeError</span>, <span class="ident">TransportError</span>};
@@ -317,7 +316,7 @@
                     }
                 });
 
-				<span class="comment">// create spawn to receive socket response to stdout</span>
+                <span class="comment">// create spawn to receive socket response to stdout</span>
                 <span class="ident">rt</span>.<span class="ident">spawn</span>(<span class="kw">async</span> <span class="kw">move</span> {
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stdout</span> <span class="op">=</span> <span class="ident">io::stdout</span>();
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">socket_read</span> <span class="op">=</span> <span class="ident">BufReader::new</span>(<span class="ident">owned_read_half</span>);
@@ -330,8 +329,7 @@
                     }
                 });
 
-
-				<span class="comment">// forward stdin to socket</span>
+                <span class="comment">// forward stdin to socket</span>
                 <span class="kw">let</span> <span class="ident">stdin</span> <span class="op">=</span> <span class="ident">std::io::stdin</span>();
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stdin</span> <span class="op">=</span> <span class="ident">stdin</span>.<span class="ident">lock</span>();
                 <span class="kw">loop</span> {
@@ -341,7 +339,7 @@
                         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tmp_buf</span> <span class="op">=</span> <span class="ident">String::new</span>();
                         <span class="ident">stdin</span>.<span class="ident">read_line</span>(<span class="kw-2">&amp;mut</span> <span class="ident">tmp_buf</span>).<span class="ident">unwrap</span>();
 
-                        <span class="kw">let</span> <span class="ident">length</span> <span class="op">=</span> <span class="ident">usize::from_str_radix</span>(<span class="ident">length</span>.<span class="ident">trim</span>(), <span class="number">10</span>).<span class="ident">expect</span>(<span class="string">&quot;解析出错&quot;</span>);
+                        <span class="kw">let</span> <span class="ident">length</span> <span class="op">=</span> <span class="ident">length</span>.<span class="ident">trim</span>().<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>().<span class="ident">expect</span>(<span class="string">&quot;parse error&quot;</span>);
                         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">msg</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0u8</span>; <span class="ident">length</span>];
 
                         <span class="ident">stdin</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;mut</span> <span class="ident">msg</span>).<span class="ident">unwrap</span>();
