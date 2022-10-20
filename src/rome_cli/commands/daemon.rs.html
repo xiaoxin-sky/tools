@@ -188,14 +188,61 @@
 <span id="188">188</span>
 <span id="189">189</span>
 <span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">rome_console</span>::{<span class="ident">markup</span>, <span class="ident">ConsoleExt</span>};
 <span class="kw">use</span> <span class="ident">rome_lsp::ServerFactory</span>;
 <span class="kw">use</span> <span class="ident">rome_service</span>::{<span class="ident">workspace::WorkspaceClient</span>, <span class="ident">RomeError</span>, <span class="ident">TransportError</span>};
-<span class="kw">use</span> <span class="ident">std::env</span>;
-<span class="kw">use</span> <span class="ident">tokio</span>::{
-    <span class="ident">io</span>::{<span class="self">self</span>},
-    <span class="ident">runtime::Runtime</span>,
-};
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">env</span>, <span class="ident">fs</span>, <span class="ident">path::PathBuf</span>};
+<span class="kw">use</span> <span class="ident">tokio::io</span>;
+<span class="kw">use</span> <span class="ident">tokio::runtime::Runtime</span>;
+<span class="kw">use</span> <span class="ident">tracing::subscriber::Interest</span>;
 <span class="kw">use</span> <span class="ident">tracing</span>::{<span class="ident">debug_span</span>, <span class="ident">metadata::LevelFilter</span>, <span class="ident">Instrument</span>, <span class="ident">Metadata</span>};
 <span class="kw">use</span> <span class="ident">tracing_subscriber</span>::{
     <span class="ident">layer</span>::{<span class="ident">Context</span>, <span class="ident">Filter</span>},
@@ -334,6 +381,35 @@
     }
 }
 
+<span class="kw">const</span> <span class="kw">fn</span> <span class="ident">log_file_name_prefix</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
+    <span class="string">&quot;server.log&quot;</span>
+}
+
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">read_most_recent_log_file</span>() -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">logs_dir</span> <span class="op">=</span> <span class="ident">rome_log_dir</span>();
+
+    <span class="kw">let</span> <span class="ident">most_recent</span> <span class="op">=</span> <span class="ident">fs::read_dir</span>(<span class="ident">logs_dir</span>)<span class="question-mark">?</span>
+        .<span class="ident">into_iter</span>()
+        .<span class="ident">flatten</span>()
+        .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">file</span><span class="op">|</span> <span class="ident">file</span>.<span class="ident">file_type</span>().<span class="ident">map_or</span>(<span class="bool-val">false</span>, <span class="op">|</span><span class="ident">ty</span><span class="op">|</span> <span class="ident">ty</span>.<span class="ident">is_file</span>()))
+        .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">file</span><span class="op">|</span> {
+            <span class="kw">match</span> <span class="ident">file</span>
+                .<span class="ident">file_name</span>()
+                .<span class="ident">to_str</span>()<span class="question-mark">?</span>
+                .<span class="ident">split_once</span>(<span class="ident">log_file_name_prefix</span>())
+            {
+                <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="ident">date_part</span>)) <span class="kw">if</span> <span class="ident">date_part</span>.<span class="ident">split</span>(<span class="string">&#39;-&#39;</span>).<span class="ident">count</span>() <span class="op">==</span> <span class="number">4</span> =&gt; <span class="prelude-val">Some</span>(<span class="ident">file</span>.<span class="ident">path</span>()),
+                <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
+            }
+        })
+        .<span class="ident">max</span>();
+
+    <span class="kw">match</span> <span class="ident">most_recent</span> {
+        <span class="prelude-val">Some</span>(<span class="ident">file</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">fs::read_to_string</span>(<span class="ident">file</span>)<span class="question-mark">?</span>)),
+        <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+    }
+}
+
 <span class="doccomment">/// Setup the [tracing]-based logging system for the server</span>
 <span class="doccomment">/// The events received by the subscriber are filtered at the `info` level,</span>
 <span class="doccomment">/// then printed using the [HierarchicalLayer] layer, and the resulting text</span>
@@ -341,8 +417,7 @@
 <span class="doccomment">/// `rome-logs/server.log.yyyy-MM-dd-HH` files inside the system temporary</span>
 <span class="doccomment">/// directory)</span>
 <span class="kw">fn</span> <span class="ident">setup_tracing_subscriber</span>() {
-    <span class="kw">let</span> <span class="ident">logs_dir</span> <span class="op">=</span> <span class="ident">env::temp_dir</span>().<span class="ident">join</span>(<span class="string">&quot;rome-logs&quot;</span>);
-    <span class="kw">let</span> <span class="ident">file_appender</span> <span class="op">=</span> <span class="ident">tracing_appender::rolling::hourly</span>(<span class="ident">logs_dir</span>, <span class="string">&quot;server.log&quot;</span>);
+    <span class="kw">let</span> <span class="ident">file_appender</span> <span class="op">=</span> <span class="ident">tracing_appender::rolling::hourly</span>(<span class="ident">rome_log_dir</span>(), <span class="ident">log_file_name_prefix</span>());
 
     <span class="ident">registry</span>()
         .<span class="ident">with</span>(
@@ -358,13 +433,20 @@
         .<span class="ident">init</span>();
 }
 
+<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">rome_log_dir</span>() -&gt; <span class="ident">PathBuf</span> {
+    <span class="kw">match</span> <span class="ident">env::var_os</span>(<span class="string">&quot;ROME_LOG_DIR&quot;</span>) {
+        <span class="prelude-val">Some</span>(<span class="ident">directory</span>) =&gt; <span class="ident">PathBuf::from</span>(<span class="ident">directory</span>),
+        <span class="prelude-val">None</span> =&gt; <span class="ident">env::temp_dir</span>().<span class="ident">join</span>(<span class="string">&quot;rome-logs&quot;</span>),
+    }
+}
+
 <span class="doccomment">/// Tracing filter enabling:</span>
 <span class="doccomment">/// - All spans and events at level info or higher</span>
 <span class="doccomment">/// - All spans and events at level debug in crates whose name starts with `rome`</span>
 <span class="kw">struct</span> <span class="ident">LoggingFilter</span>;
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="ident">Filter</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">LoggingFilter</span> {
-    <span class="kw">fn</span> <span class="ident">enabled</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="ident">_cx</span>: <span class="kw-2">&amp;</span><span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">S</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
+<span class="kw">impl</span> <span class="ident">LoggingFilter</span> {
+    <span class="kw">fn</span> <span class="ident">is_enabled</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
         <span class="kw">let</span> <span class="ident">filter</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">meta</span>.<span class="ident">target</span>().<span class="ident">starts_with</span>(<span class="string">&quot;rome&quot;</span>) {
             <span class="ident">LevelFilter::DEBUG</span>
         } <span class="kw">else</span> {
@@ -372,6 +454,20 @@
         };
 
         <span class="ident">meta</span>.<span class="ident">level</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">filter</span>
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="ident">Filter</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">LoggingFilter</span> {
+    <span class="kw">fn</span> <span class="ident">enabled</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="ident">_cx</span>: <span class="kw-2">&amp;</span><span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">S</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">is_enabled</span>(<span class="ident">meta</span>)
+    }
+
+    <span class="kw">fn</span> <span class="ident">callsite_enabled</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span>) -&gt; <span class="ident">Interest</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_enabled</span>(<span class="ident">meta</span>) {
+            <span class="ident">Interest::always</span>()
+        } <span class="kw">else</span> {
+            <span class="ident">Interest::never</span>()
+        }
     }
 
     <span class="kw">fn</span> <span class="ident">max_level_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LevelFilter</span><span class="op">&gt;</span> {

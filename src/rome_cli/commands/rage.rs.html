@@ -193,6 +193,42 @@
 <span id="193">193</span>
 <span id="194">194</span>
 <span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">rome_console::fmt</span>::{<span class="ident">Display</span>, <span class="ident">Formatter</span>};
 <span class="kw">use</span> <span class="ident">rome_console</span>::{<span class="ident">fmt</span>, <span class="ident">markup</span>, <span class="ident">ConsoleExt</span>, <span class="ident">HorizontalLine</span>, <span class="ident">Markup</span>};
 <span class="kw">use</span> <span class="ident">rome_diagnostics::termcolor</span>;
@@ -203,6 +239,7 @@
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">env</span>, <span class="ident">io</span>, <span class="ident">ops::Deref</span>};
 <span class="kw">use</span> <span class="ident">tokio::runtime::Runtime</span>;
 
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::commands::daemon::read_most_recent_log_file</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">service</span>, <span class="ident">CliSession</span>, <span class="ident">Termination</span>, <span class="ident">VERSION</span>};
 
 <span class="doccomment">/// Handler for the `rage` command</span>
@@ -220,11 +257,13 @@
     {<span class="ident">KeyValuePair</span>(<span class="string">&quot;OS&quot;</span>, <span class="macro">markup!</span>({<span class="ident">std::env::consts::OS</span>}))}
 
     {<span class="ident">Section</span>(<span class="string">&quot;Environment&quot;</span>)}
+    {<span class="ident">EnvVarOs</span>(<span class="string">&quot;ROME_LOG_DIR&quot;</span>)}
     {<span class="ident">EnvVarOs</span>(<span class="string">&quot;NO_COLOR&quot;</span>)}
     {<span class="ident">EnvVarOs</span>(<span class="string">&quot;TERM&quot;</span>)}
 
     {<span class="ident">RageConfiguration</span>(<span class="kw-2">&amp;</span><span class="ident">session</span>.<span class="ident">app</span>.<span class="ident">fs</span>)}
     {<span class="ident">WorkspaceRage</span>(<span class="ident">session</span>.<span class="ident">app</span>.<span class="ident">workspace</span>.<span class="ident">deref</span>())}
+    {<span class="ident">ConnectedClientServerLog</span>(<span class="ident">session</span>.<span class="ident">app</span>.<span class="ident">workspace</span>.<span class="ident">deref</span>())}
     ));
 
     <span class="kw">if</span> <span class="ident">session</span>.<span class="ident">app</span>.<span class="ident">workspace</span>.<span class="ident">server_info</span>().<span class="ident">is_none</span>() {
@@ -281,11 +320,11 @@
 
         <span class="kw">match</span> <span class="ident">service::open_transport</span>(<span class="ident">runtime</span>) {
             <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) =&gt; {
-                <span class="macro">markup!</span>(
+                <span class="kw">return</span> <span class="macro">markup!</span>(
                     {<span class="ident">Section</span>(<span class="string">&quot;Server&quot;</span>)}
                     {<span class="ident">KeyValuePair</span>(<span class="string">&quot;Status&quot;</span>, <span class="macro">markup!</span>(<span class="op">&lt;</span><span class="ident">Dim</span><span class="op">&gt;</span><span class="string">&quot;stopped&quot;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">Dim</span><span class="op">&gt;</span>))}
                 )
-                .<span class="ident">fmt</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
+                .<span class="ident">fmt</span>(<span class="ident">f</span>);
             }
             <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">transport</span>)) =&gt; {
                 <span class="macro">markup!</span>(<span class="string">&quot;\n&quot;</span><span class="op">&lt;</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot;Running Rome Server:&quot;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot; &quot;</span>{<span class="ident">HorizontalLine::new</span>(<span class="number">78</span>)}<span class="string">&quot;
@@ -308,7 +347,7 @@
             }
         };
 
-        <span class="prelude-val">Ok</span>(())
+        <span class="ident">RomeServerLog</span>.<span class="ident">fmt</span>(<span class="ident">f</span>)
     }
 }
 
@@ -386,6 +425,39 @@
         <span class="ident">value</span>.<span class="ident">fmt</span>(<span class="ident">fmt</span>)<span class="question-mark">?</span>;
 
         <span class="ident">fmt</span>.<span class="ident">write_str</span>(<span class="string">&quot;\n&quot;</span>)
+    }
+}
+
+<span class="kw">struct</span> <span class="ident">RomeServerLog</span>;
+
+<span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">RomeServerLog</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Formatter</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">log</span>)) <span class="op">=</span> <span class="ident">read_most_recent_log_file</span>() {
+            <span class="macro">markup!</span>(<span class="string">&quot;\n&quot;</span><span class="op">&lt;</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="ident">Underline</span><span class="op">&gt;</span><span class="string">&quot;Rome Server Log:&quot;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">Underline</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot;
+
+&quot;</span><span class="op">&lt;</span><span class="ident">Warn</span><span class="op">&gt;</span><span class="string">&quot;\u{26a0} Please review the content of the log file before sharing it publicly as it may contain sensitive information:
+  * Path names that may reveal your name, a project name, or the name of your employer.
+  * Source code
+&quot;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">Warn</span><span class="op">&gt;</span>)
+            .<span class="ident">fmt</span>(<span class="ident">fmt</span>)<span class="question-mark">?</span>;
+
+            <span class="macro">write!</span>(<span class="ident">fmt</span>, <span class="string">&quot;\n{log}&quot;</span>)<span class="question-mark">?</span>;
+        }
+
+        <span class="prelude-val">Ok</span>(())
+    }
+}
+
+<span class="doccomment">/// Prints the server logs but only if the client is connected to a rome server.</span>
+<span class="kw">struct</span> <span class="ident">ConnectedClientServerLog</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">Workspace</span>);
+
+<span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">ConnectedClientServerLog</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Formatter</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">server_info</span>().<span class="ident">is_some</span>() {
+            <span class="ident">RomeServerLog</span>.<span class="ident">fmt</span>(<span class="ident">fmt</span>)
+        } <span class="kw">else</span> {
+            <span class="prelude-val">Ok</span>(())
+        }
     }
 }
 </code></pre></div>
