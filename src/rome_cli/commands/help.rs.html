@@ -131,6 +131,15 @@
 <span id="131">131</span>
 <span id="132">132</span>
 <span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">rome_console</span>::{<span class="ident">markup</span>, <span class="ident">ConsoleExt</span>, <span class="ident">Markup</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">CliSession</span>, <span class="ident">Termination</span>, <span class="ident">VERSION</span>};
@@ -145,6 +154,7 @@
     - &quot;</span><span class="op">&lt;</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot;init&quot;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot;         Bootstraps a new rome project
     - &quot;</span><span class="op">&lt;</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot;start&quot;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot;        Start the Rome daemon server process
     - &quot;</span><span class="op">&lt;</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot;stop&quot;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot;         Stop the Rome daemon server process
+    - &quot;</span><span class="op">&lt;</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot;lsp-proxy&quot;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot;    Start a proxy process make Rome LSP server support communicates via stdin/stdout
     - &quot;</span><span class="op">&lt;</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot;rage&quot;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot;         Prints information for debugging
     - &quot;</span><span class="op">&lt;</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot;version&quot;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot;      Shows the Rome version information and quit
     - &quot;</span><span class="op">&lt;</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot;help&quot;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot;         Prints this help message
@@ -228,6 +238,13 @@
     rome stop&quot;</span>
 };
 
+<span class="kw">const</span> <span class="ident">START_LSP_PROXY</span>: <span class="ident">Markup</span> <span class="op">=</span> <span class="macro">markup!</span> {
+<span class="string">&quot;Rome lsp-proxy: Start a proxy process make Rome LSP server support communicates via stdin/stdout
+
+	&quot;</span><span class="op">&lt;</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot;USAGE:&quot;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">Emphasis</span><span class="op">&gt;</span><span class="string">&quot;
+		rome lsp-proxy&quot;</span>
+};
+
 <span class="kw">const</span> <span class="ident">RAGE</span>: <span class="ident">Markup</span> <span class="op">=</span> <span class="macro">markup!</span> {
 <span class="string">&quot;Rome rage: Prints information for debugging
 
@@ -251,6 +268,7 @@
         <span class="prelude-val">Some</span>(<span class="string">&quot;init&quot;</span>) =&gt; <span class="ident">INIT</span>,
         <span class="prelude-val">Some</span>(<span class="string">&quot;start&quot;</span>) =&gt; <span class="ident">START</span>,
         <span class="prelude-val">Some</span>(<span class="string">&quot;stop&quot;</span>) =&gt; <span class="ident">STOP</span>,
+        <span class="prelude-val">Some</span>(<span class="string">&quot;lsp-proxy&quot;</span>) =&gt; <span class="ident">START_LSP_PROXY</span>,
         <span class="prelude-val">Some</span>(<span class="string">&quot;version&quot;</span>) =&gt; <span class="ident">VERSION_HELP_TEXT</span>,
         <span class="prelude-val">Some</span>(<span class="string">&quot;rage&quot;</span>) =&gt; <span class="ident">RAGE</span>,
 
