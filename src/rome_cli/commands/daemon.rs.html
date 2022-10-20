@@ -335,9 +335,9 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="doccomment">/// start a proxy process.</span>
-<span class="doccomment">/// receive process stdin and then copy the content to lsp socket.</span>
-<span class="doccomment">/// copy to the process stdout when the lsp responds to the message</span>
+<span class="doccomment">/// Start a proxy process.</span>
+<span class="doccomment">/// Receives a process via `stdin` and then copy the content to the LSP socket.</span>
+<span class="doccomment">/// Copy to the process on `stdout` when the LSP responds to a message</span>
 <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">start_lsp_proxy</span>(<span class="ident">rt</span>: <span class="kw-2">&amp;</span><span class="ident">Runtime</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Termination</span><span class="op">&gt;</span> {
     <span class="ident">ensure_daemon</span>().<span class="kw">await</span><span class="question-mark">?</span>;
 
