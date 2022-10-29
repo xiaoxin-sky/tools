@@ -566,6 +566,7 @@
 <span id="566">566</span>
 <span id="567">567</span>
 <span id="568">568</span>
+<span id="569">569</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::parser</span>::{<span class="ident">expected_token</span>, <span class="ident">RecoveryResult</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::syntax::binding</span>::{
     <span class="ident">is_nth_at_identifier_binding</span>, <span class="ident">parse_binding</span>, <span class="ident">parse_identifier_binding</span>,
@@ -600,9 +601,7 @@
             <span class="ident">p</span>.<span class="ident">bump_remap</span>(<span class="macro">T!</span>[<span class="ident">ident</span>]);
         }
         <span class="ident">JS_NUMBER_LITERAL</span> =&gt; {
-            <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">p</span>
-                .<span class="ident">err_builder</span>(<span class="string">&quot;An enum member cannot have a numeric name&quot;</span>)
-                .<span class="ident">primary</span>(<span class="ident">p</span>.<span class="ident">cur_range</span>(), <span class="string">&quot;&quot;</span>);
+            <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">p</span>.<span class="ident">err_builder</span>(<span class="string">&quot;An enum member cannot have a numeric name&quot;</span>, <span class="ident">p</span>.<span class="ident">cur_range</span>());
             <span class="ident">p</span>.<span class="ident">error</span>(<span class="ident">err</span>);
             <span class="ident">p</span>.<span class="ident">bump_any</span>()
         }
@@ -621,9 +620,7 @@
     <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">p</span>.<span class="ident">cur</span>() {
         <span class="macro">T!</span>[<span class="string">&#39;[&#39;</span>] =&gt; <span class="ident">syntax::object::parse_computed_member_name</span>(<span class="ident">p</span>),
         <span class="macro">T!</span>[#] =&gt; {
-            <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">p</span>
-                .<span class="ident">err_builder</span>(<span class="string">&quot;An `enum` member cannot be private&quot;</span>)
-                .<span class="ident">primary</span>(<span class="ident">p</span>.<span class="ident">cur_range</span>(), <span class="string">&quot;&quot;</span>);
+            <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">p</span>.<span class="ident">err_builder</span>(<span class="string">&quot;An `enum` member cannot be private&quot;</span>, <span class="ident">p</span>.<span class="ident">cur_range</span>());
             <span class="ident">p</span>.<span class="ident">error</span>(<span class="ident">err</span>);
             <span class="ident">syntax::class::parse_private_class_member_name</span>(<span class="ident">p</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">mut</span> <span class="ident">x</span><span class="op">|</span> {
                 <span class="ident">x</span>.<span class="ident">change_to_unknown</span>(<span class="ident">p</span>);
@@ -688,12 +685,13 @@
         <span class="ident">Present</span>(<span class="ident">id</span>) =&gt; {
             <span class="kw">let</span> <span class="ident">text</span> <span class="op">=</span> <span class="ident">p</span>.<span class="ident">source</span>(<span class="ident">id</span>.<span class="ident">range</span>(<span class="ident">p</span>));
             <span class="kw">if</span> <span class="ident">is_reserved_enum_name</span>(<span class="ident">text</span>) {
-                <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">p</span>
-                    .<span class="ident">err_builder</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+                <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">p</span>.<span class="ident">err_builder</span>(
+                    <span class="macro">format!</span>(
                         <span class="string">&quot;`{}` cannot be used as a enum name because it is already reserved&quot;</span>,
                         <span class="ident">text</span>
-                    ))
-                    .<span class="ident">primary</span>(<span class="ident">id</span>.<span class="ident">range</span>(<span class="ident">p</span>), <span class="string">&quot;&quot;</span>);
+                    ),
+                    <span class="ident">id</span>.<span class="ident">range</span>(<span class="ident">p</span>),
+                );
 
                 <span class="ident">p</span>.<span class="ident">error</span>(<span class="ident">err</span>);
             }
@@ -709,12 +707,12 @@
                 <span class="ident">p</span>.<span class="ident">bump_any</span>();
                 <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">m</span>.<span class="ident">complete</span>(<span class="ident">p</span>, <span class="ident">JS_UNKNOWN_BINDING</span>);
 
-                <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">p</span>.<span class="ident">err_builder</span>(<span class="string">&quot;invalid `enum` name&quot;</span>).<span class="ident">primary</span>(<span class="ident">range</span>, <span class="string">&quot;&quot;</span>);
+                <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">p</span>.<span class="ident">err_builder</span>(<span class="string">&quot;invalid `enum` name&quot;</span>, <span class="ident">range</span>);
                 <span class="ident">p</span>.<span class="ident">error</span>(<span class="ident">err</span>);
             } <span class="kw">else</span> {
-                <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">p</span>.<span class="ident">err_builder</span>(<span class="string">&quot;`enum` statements must have a name&quot;</span>).<span class="ident">primary</span>(
+                <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">p</span>.<span class="ident">err_builder</span>(
+                    <span class="string">&quot;`enum` statements must have a name&quot;</span>,
                     <span class="ident">TextRange::new</span>(<span class="ident">enum_token_range</span>.<span class="ident">start</span>(), <span class="ident">p</span>.<span class="ident">cur_range</span>().<span class="ident">start</span>()),
-                    <span class="string">&quot;&quot;</span>,
                 );
                 <span class="ident">p</span>.<span class="ident">error</span>(<span class="ident">err</span>);
             }
@@ -895,9 +893,8 @@
 
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">first_extends</span>) <span class="op">=</span> <span class="ident">first_extends</span>.<span class="ident">as_ref</span>() {
                 <span class="ident">p</span>.<span class="ident">error</span>(
-                    <span class="ident">p</span>.<span class="ident">err_builder</span>(<span class="string">&quot;&#39;extends&#39; clause already seen.&quot;</span>)
-                        .<span class="ident">primary</span>(<span class="ident">extends</span>.<span class="ident">range</span>(<span class="ident">p</span>), <span class="string">&quot;&quot;</span>)
-                        .<span class="ident">secondary</span>(<span class="ident">first_extends</span>.<span class="ident">range</span>(<span class="ident">p</span>), <span class="string">&quot;first &#39;extends&#39; clause&quot;</span>),
+                    <span class="ident">p</span>.<span class="ident">err_builder</span>(<span class="string">&quot;&#39;extends&#39; clause already seen.&quot;</span>, <span class="ident">extends</span>.<span class="ident">range</span>(<span class="ident">p</span>))
+                        .<span class="ident">detail</span>(<span class="ident">first_extends</span>.<span class="ident">range</span>(<span class="ident">p</span>), <span class="string">&quot;first &#39;extends&#39; clause&quot;</span>),
                 )
             } <span class="kw">else</span> {
                 <span class="ident">first_extends</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">extends</span>);
@@ -905,10 +902,10 @@
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">p</span>.<span class="ident">at</span>(<span class="macro">T!</span>[<span class="ident">implements</span>]) {
             <span class="kw">let</span> <span class="ident">implements</span> <span class="op">=</span>
                 <span class="ident">parse_ts_implements_clause</span>(<span class="ident">p</span>).<span class="ident">expect</span>(<span class="string">&quot;positioned at the implements keyword&quot;</span>);
-            <span class="ident">p</span>.<span class="ident">error</span>(
-                <span class="ident">p</span>.<span class="ident">err_builder</span>(<span class="string">&quot;Interface declaration cannot have &#39;implements&#39; clause.&quot;</span>)
-                    .<span class="ident">primary</span>(<span class="ident">implements</span>.<span class="ident">range</span>(<span class="ident">p</span>), <span class="string">&quot;&quot;</span>),
-            );
+            <span class="ident">p</span>.<span class="ident">error</span>(<span class="ident">p</span>.<span class="ident">err_builder</span>(
+                <span class="string">&quot;Interface declaration cannot have &#39;implements&#39; clause.&quot;</span>,
+                <span class="ident">implements</span>.<span class="ident">range</span>(<span class="ident">p</span>),
+            ));
         } <span class="kw">else</span> {
             <span class="kw">break</span>;
         }
@@ -995,7 +992,8 @@
 <span class="comment">//</span>
 <span class="comment">// test ts ts_external_module_declaration</span>
 <span class="comment">// declare module &quot;a&quot;;</span>
-<span class="comment">// declare module &quot;./import&quot; {}</span>
+<span class="comment">// declare module &quot;b&quot;</span>
+<span class="comment">// declare module &quot;import&quot; {}</span>
 <span class="comment">//</span>
 <span class="comment">// test_err ts ts_module_err</span>
 <span class="comment">// declare module a; // missing body</span>
@@ -1019,9 +1017,13 @@
             <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="ident">parse_ts_module_block</span>(<span class="ident">p</span>);
 
             <span class="kw">if</span> <span class="ident">body</span>.<span class="ident">is_absent</span>() {
-                <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="ident">p</span>.<span class="ident">start</span>();
-                <span class="ident">semi</span>(<span class="ident">p</span>, <span class="ident">TextRange::new</span>(<span class="ident">stmt_start_pos</span>, <span class="ident">p</span>.<span class="ident">cur_range</span>().<span class="ident">end</span>()));
-                <span class="ident">body</span>.<span class="ident">complete</span>(<span class="ident">p</span>, <span class="ident">TS_EMPTY_EXTERNAL_MODULE_DECLARATION_BODY</span>);
+                <span class="kw">if</span> <span class="ident">p</span>.<span class="ident">at</span>(<span class="macro">T!</span>[;]) {
+                    <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="ident">p</span>.<span class="ident">start</span>();
+                    <span class="ident">p</span>.<span class="ident">bump</span>(<span class="macro">T!</span>[;]);
+                    <span class="ident">body</span>.<span class="ident">complete</span>(<span class="ident">p</span>, <span class="ident">TS_EMPTY_EXTERNAL_MODULE_DECLARATION_BODY</span>);
+                } <span class="kw">else</span> {
+                    <span class="ident">semi</span>(<span class="ident">p</span>, <span class="ident">TextRange::new</span>(<span class="ident">stmt_start_pos</span>, <span class="ident">p</span>.<span class="ident">cur_range</span>().<span class="ident">end</span>()));
+                }
             }
 
             <span class="kw">return</span> <span class="ident">Present</span>(<span class="ident">m</span>.<span class="ident">complete</span>(<span class="ident">p</span>, <span class="ident">TS_EXTERNAL_MODULE_DECLARATION</span>));

@@ -473,8 +473,6 @@
 <span id="473">473</span>
 <span id="474">474</span>
 <span id="475">475</span>
-<span id="476">476</span>
-<span id="477">477</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Implements the OS dependent transport layer for the server protocol. This</span>
 <span class="doccomment">//! uses a domain socket created in the global temporary directory on Unix</span>
 <span class="doccomment">//! systems, and a named pipe on Windows. The protocol used for message frames</span>
@@ -520,9 +518,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
 <span class="kw">mod</span> <span class="ident">windows</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident"><span class="self">self</span>::windows::open_socket</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use</span> <span class="ident"><span class="self">self</span>::windows</span>::{<span class="ident">ensure_daemon</span>, <span class="ident">print_socket</span>, <span class="ident">run_daemon</span>};
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use</span> <span class="ident"><span class="self">self</span>::windows</span>::{<span class="ident">ensure_daemon</span>, <span class="ident">open_socket</span>, <span class="ident">print_socket</span>, <span class="ident">run_daemon</span>};
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">mod</span> <span class="ident">unix</span>;
